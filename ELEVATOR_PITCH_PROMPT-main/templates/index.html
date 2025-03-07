@@ -1,0 +1,129 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elevator Pitch Refinement</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container" style="display: flex; justify-content: center; margin-bottom: 20px; margin-top: 10px;">
+                <div>
+                    <img src="{{ url_for('static', path='IVIS_logo.png') }}" alt="IVIS Logo" style="width: 300px;">
+                </div>
+                <div style="display: flex; justify-content: center; gap: 20px;">
+                    <img src="{{ url_for('static', path='NIE_University.png') }}" alt="NIE University Logo" style="width: 150px;">
+                    <img src="{{ url_for('static', path='PULSE LOGO.png') }}" alt="Pulse Logo" style="width: 150px;">
+                </div>
+            </div>
+            <h1>Elevator Pitch Refinement</h1>
+            <p>Sharpen your startup pitch with AI-generated suggestions</p>
+        </header>
+
+        <div class="form-container">
+            <form id="pitchForm">
+                <div class="form-group">
+                    <label for="startup_name">Startup Name:</label>
+                    <input type="text" id="startup_name" name="startup_name" required placeholder="Enter your startup's name">
+                </div>
+
+                <div class="form-group">
+                    <label for="business_model">Business Model:</label>
+                    <textarea id="business_model" name="business_model" required placeholder="Describe your business model..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="competitive_advantages">Competitive Advantages:</label>
+                    <textarea id="competitive_advantages" name="competitive_advantages" required placeholder="What makes your startup unique?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="tone">Tone:</label>
+                    <select id="tone" name="tone">
+                        <option value="persuasive" selected>Persuasive</option>
+                        <option value="professional">Professional</option>
+                        <option value="casual">Casual</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="generateBtn">Refine My Pitch</button>
+            </form>
+        </div>
+
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <h2>Your Refined Elevator Pitch</h2>
+            <div id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Generating pitch...</p>
+            </div>
+            <div id="results"></div>
+            <button id="copyBtn">Copy to Clipboard</button>
+        </div>
+
+        <footer style="
+        text-align: center; 
+        font-style: italic; 
+        font-size: 16px; 
+        font-weight: bold; 
+        color: #333; 
+        padding: 10px; 
+        box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);">
+        Provided by IVIS LABS Pvt Ltd
+        </footer>
+    
+    </div>
+
+
+    <script>
+        document.getElementById('pitchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const resultsContainer = document.getElementById('resultsContainer');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            resultsContainer.style.display = 'block';
+            loading.style.display = 'block';
+            results.innerHTML = '';
+            
+            try {
+                const response = await fetch('http://localhost:8080/generate_pitch', {  // Ensure the correct port
+                method: 'POST',
+                body: formData
+            });
+
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                results.innerHTML = `<p>${data.elevator_pitch.replace(/\n/g, '<br>')}</p>`;
+                
+            } catch (error) {
+                results.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const results = document.getElementById('results').innerText;
+            navigator.clipboard.writeText(results)
+                .then(() => {
+                    document.getElementById('copyBtn').textContent = 'Copied!';
+                    setTimeout(() => {
+                        document.getElementById('copyBtn').textContent = 'Copy to Clipboard';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+        });
+    </script>
+</body>
+</html>
